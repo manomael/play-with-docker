@@ -1,96 +1,96 @@
 # play-with-docker
 
-Play With Docker provides a free, in-browser Alpine Linux Virtual Machine, allowing you to build and run Docker containers and create clusters using Docker Swarm Mode. Under the hood, it utilizes DIND (Docker-in-Docker) to simulate multiple VMs/PCs.
+O Play With Docker oferece uma Máquina Virtual Alpine Linux gratuita no navegador, permitindo que você crie e execute contêineres Docker e crie clusters usando o Docker Swarm Mode. Por baixo dos panos, ele utiliza DIND (Docker-in-Docker) para simular múltiplos VMs/PCs.
 
-A live version is available at: [http://play-with-docker.com/](http://play-with-docker.com/)
+Uma versão ao vivo está disponível em: [http://play-with-docker.com/](http://play-with-docker.com/)
 
-## Features
+## Funcionalidades
 
-- Free Alpine Linux Virtual Machine in the cloud
-- Build and run Docker containers
-- Create clusters with Docker Swarm Mode
-- DIND (Docker-in-Docker) for multiple VMs/PCs effect
+- Máquina Virtual Alpine Linux gratuita na nuvem
+- Crie e execute contêineres Docker
+- Crie clusters com Docker Swarm Mode
+- Simula múltiplos VMs/PCs com DIND (Docker-in-Docker)
 
-## Table of Contents
+## Índice
 
-- [Requirements](#requirements)
-- [Development](#development)
-  - [Port Forwarding](#port-forwarding)
-  - [Building the DIND Image Myself](#building-the-dind-image-myself)
+- [Requisitos](#requisitos)
+- [Desenvolvimento](#desenvolvimento)
+  - [Encaminhamento de Porta](#encaminhamento-de-porta)
+  - [Construindo a Imagem DIND](#construindo-a-imagem-dind)
 - [FAQ](#faq)
-- [Contributing](#contributing)
-- [License](#license)
+- [Contribuindo](#contribuindo)
+- [Licença](#licenca)
 
-## Requirements
+## Requisitos
 
-Docker 1.13+ is required.
+É necessário Docker 1.13+.
 
-The Docker daemon must be running in Swarm Mode because PWD utilizes overlay attachable networks. To enable Swarm Mode, run `docker swarm init` on the destination daemon.
+O daemon do Docker deve estar rodando em Swarm Mode porque o PWD utiliza redes overlay anexáveis. Para habilitar o Swarm Mode, execute `docker swarm init` no daemon de destino.
 
-It is also necessary to manually load the IPVS kernel module, as the daemon will not load it automatically when swarms are created in DIND. Run the following command:
+Também é necessário carregar manualmente o módulo do kernel IPVS, pois o daemon não o carregará automaticamente quando os swarms são criados no DIND. Execute o seguinte comando:
 ```bash
 sudo modprobe xt_ipvs
 ```
 
-## Development
+## Desenvolvimento
 
-To get started with development:
+Para começar com o desenvolvimento:
 
-1. Ensure the Docker daemon is running on your machine.
-2. Pull the DIND image: `docker pull franela/dind`.
-3. Install Go 1.7.1+ (e.g., using `brew` on macOS or your system's package manager).
-4. Install [dep](https://github.com/golang/dep) for dependency management and run `dep ensure` to download dependencies.
-5. Start PWD as a container using `docker-compose up`.
-6. Open [http://localhost](http://localhost) in your browser and click "New Instance".
+1. Certifique-se de que o daemon do Docker esteja rodando na sua máquina.
+2. Baixe a imagem DIND: `docker pull franela/dind`.
+3. Instale o Go 1.7.1+ (por exemplo, usando `brew` no macOS ou o gerenciador de pacotes do seu sistema).
+4. Instale o [dep](https://github.com/golang/dep) para gerenciamento de dependências e execute `dep ensure` para baixar as dependências.
+5. Inicie o PWD como um contêiner usando `docker-compose up`.
+6. Abra [http://localhost](http://localhost) no seu navegador e clique em "Nova Instância".
 
-**Notes:**
+**Observações:**
 
-*   There is a hard-coded limit of 5 Docker playgrounds per session. Sessions are deleted after 4 hours.
-*   To override the DIND version or image, set the `DIND_IMAGE` environment variable (e.g., `DIND_IMAGE=franela/docker<version>-rc:dind`). Note that only [franela](https://hub.docker.com/r/franela/) DIND images are compatible, not standard `dind` images.
+*   Existe um limite fixo de 5 playgrounds Docker por sessão. As sessões são excluídas após 4 horas.
+*   Para substituir a versão ou imagem DIND, defina a variável de ambiente `DIND_IMAGE` (por exemplo, `DIND_IMAGE=franela/docker<versao>-rc:dind`). Note que apenas imagens DIND da [franela](https://hub.docker.com/r/franela/) são compatíveis, não imagens `dind` padrão.
 
-### Port Forwarding
+### Encaminhamento de Porta
 
-For port forwarding to work correctly during development, `*.localhost` must resolve to `127.0.0.1`. This ensures that when you access a URL like `pwd10-0-0-1-8080.host1.localhost`, you are correctly forwarded to your local PWD server.
+Para que o encaminhamento de porta funcione corretamente durante o desenvolvimento, `*.localhost` deve resolver para `127.0.0.1`. Isso garante que, ao acessar uma URL como `pwd10-0-0-1-8080.host1.localhost`, você seja encaminhado corretamente para o seu servidor PWD local.
 
-You can achieve this by setting up a `dnsmasq` server (which can also run in a Docker container) with the following configuration:
+Você pode conseguir isso configurando um servidor `dnsmasq` (que também pode rodar em um contêiner Docker) com a seguinte configuração:
 
 ```
 address=/localhost/127.0.0.1
 ```
 
-Remember to configure your computer's default DNS to use the dnsmasq server for resolution.
+Lembre-se de configurar o DNS padrão do seu computador para usar o servidor dnsmasq para resolução.
 
-### Building the DIND Image Myself
+### Construindo a Imagem DIND
 
-If you need to modify the DIND image:
+Se você precisar modificar a imagem DIND:
 
-1. Make your changes to the `Dockerfile.dind` file.
-2. Build the image using the command:
+1. Faça suas alterações no arquivo `Dockerfile.dind`.
+2. Construa a imagem usando o comando:
    ```bash
    docker build --build-arg docker_storage_driver=vfs -f Dockerfile.dind -t franela/dind .
    ```
 
 ## FAQ
 
-### How can I connect to a published port from the outside world?
+### Como posso me conectar a uma porta publicada do mundo exterior?
 
-To access your services from outside, use the following URL pattern: `http://ip<hyphen-ip>-<session_id>-<port>.direct.labs.play-with-docker.com` (e.g., `http://ip-2-135-3-b8ir6vbg5vr00095iil0-8080.direct.labs.play-with-docker.com`).
+Para acessar seus serviços de fora, use o seguinte padrão de URL: `http://ip<hifen-ip>-<id_sessao>-<porta>.direct.labs.play-with-docker.com` (por exemplo, `http://ip-2-135-3-b8ir6vbg5vr00095iil0-8080.direct.labs.play-with-docker.com`).
 
-### Why is PWD running on ports 80 and 443? Can I change that?
+### Por que o PWD está rodando nas portas 80 e 443? Posso mudar isso?
 
-No, PWD must run on these ports for DNS resolution to work correctly. We welcome ideas or suggestions on how to improve this.
+Não, o PWD precisa rodar nessas portas para que a resolução de DNS funcione corretamente. Agradecemos ideias ou sugestões sobre como melhorar isso.
 
-## Contributing
+## Contribuindo
 
-We welcome contributions to Play With Docker! If you'd like to contribute, please follow these general guidelines:
+Agradecemos contribuições para o Play With Docker! Se você gostaria de contribuir, siga estas diretrizes gerais:
 
-1.  Fork the repository.
-2.  Create a new branch for your changes.
-3.  Make your changes, ensuring they are well-tested and documented.
-4.  Submit a pull request for review.
+1.  Faça um fork do repositório.
+2.  Crie uma nova branch para suas alterações.
+3.  Faça suas alterações, garantindo que sejam bem testadas e documentadas.
+4.  Envie um pull request para revisão.
 
-If you find any bugs or have feature requests, please open an issue on our [GitHub Issues page](https://github.com/play-with-docker/play-with-docker/issues).
+Se você encontrar quaisquer bugs ou tiver solicitações de funcionalidades, abra uma issue em nossa [página de Issues do GitHub](https://github.com/play-with-docker/play-with-docker/issues).
 
-## License
+## Licença
 
-This project is licensed under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.
+Este projeto está licenciado sob a Licença Apache 2.0. Consulte o arquivo [LICENSE](LICENSE) para obter detalhes.
